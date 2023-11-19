@@ -1,0 +1,1 @@
+/home/bohdan/Documents/university/s7/rust/rust_memory_management/src/binary_search/target/debug/binary_search: /home/bohdan/Documents/university/s7/rust/rust_memory_management/src/binary_search/src/main.rs

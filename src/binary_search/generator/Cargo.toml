@@ -1,0 +1,11 @@
+[package]
+name = "generator"
+version = "0.1.0"
+authors = ["Dmitry Khominich"]
+
+[dependencies]
+rand = "0.8"
+
+[[bin]]
+name = "binary_search"
+path = "../binary_search.rs"

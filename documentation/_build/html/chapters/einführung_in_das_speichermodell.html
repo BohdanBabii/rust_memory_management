@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3. Einführung in das Speichermodell &mdash; Rust Memory Management  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="2. Generische Datentypen" href="generische_Datentypen.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rust Memory Management
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="user_documentation.html">1. Benutzerdokumentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="generische_Datentypen.html">2. Generische Datentypen</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">3. Einführung in das Speichermodell</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#einfuhrung">3.1. Einführung</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#grundlagen">3.2. Grundlagen</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#heap">3.2.1. Heap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stack">3.2.2. Stack</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#speicherverwaltung">3.2.3. Speicherverwaltung</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#unterschiede-stack-heap">3.2.4. Unterschiede Stack &amp; Heap</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rust-und-der-speicher">3.3. Rust und der Speicher</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#zwei-grundlegende-modelle-in-rust">3.3.1. Zwei grundlegende Modelle in Rust</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#copy-semantik-vs-clone-semantik">3.3.2. Copy-Semantik vs. Clone-Semantik</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#modell-fur-skalare-datentypen">3.4. Modell für skalare Datentypen</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#wechsel-von-gultigkeitsbereichen">3.4.1. Wechsel von Gültigkeitsbereichen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#aufruf-von-funktionen">3.4.2. Aufruf von Funktionen</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#das-allgemeine-modell">3.5. Das allgemeine Modell</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#eigentum-ownership">3.5.1. Eigentum (Ownership)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id1">3.5.2. Wechsel von Gültigkeitsbereichen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">3.5.3. Aufruf von Funktionen</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#referenzen-in-rust">3.6. Referenzen in Rust</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lesereferenzen-auf-nicht-veranderbaren-variablen">3.6.1. Lesereferenzen auf nicht veränderbaren Variablen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lesereferenzen-auf-veranderbaren-variablen">3.6.2. Lesereferenzen auf veränderbaren Variablen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#effektive-nutzung-von-lesereferenzen">3.6.3. Effektive Nutzung von Lesereferenzen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#veranderbaren-referenzen">3.6.4. Veränderbaren Referenzen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#effektive-nutzung-von-move-semantik">3.6.5. Effektive Nutzung von Move-Semantik</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#verwendung-von-variablen-und-referenzen">3.7. Verwendung von Variablen und Referenzen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#vor-und-nachteile-des-modells">3.8. Vor- und Nachteile des Modells</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rust Memory Management</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">3. </span>Einführung in das Speichermodell</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/chapters/einführung_in_das_speichermodell.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="einfuhrung-in-das-speichermodell">
+<span id="ch-einfuehrung-in-das-speichermodell"></span><h1><span class="section-number">3. </span>Einführung in das Speichermodell<a class="headerlink" href="#einfuhrung-in-das-speichermodell" title="Permalink to this heading"></a></h1>
+<section id="einfuhrung">
+<span id="ch-einfuehrung-einfuehrung-in-das-speichermodell"></span><h2><span class="section-number">3.1. </span>Einführung<a class="headerlink" href="#einfuhrung" title="Permalink to this heading"></a></h2>
+<ul>
+<li><p><strong>Einfluss auf Verwendung der Sprache:</strong></p>
+<blockquote>
+<div><p>Das Speichermodell von Rust beeinflusst die Sprachnutzung maßgeblich – Sicherheit im Speichermanagement und Geschwindigkeit werden harmonisch kombiniert.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Vorbestimmte Nutzungszeit:</strong></p>
+<blockquote>
+<div><p>Die Nutzung des Speichers kann im Normalfall bereits zur Übersetzungszeit vorbestimmt werden, was zu einer effizienten Ausführung führt.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<ul class="simple">
+<li><p><strong>Gültigkeitsbereich für Variablen</strong></p></li>
+<li><p><strong>Freigabe von lokalen Variablen</strong></p></li>
+<li><p><strong>Begriff des Eigentums (Ownership)</strong></p></li>
+<li><p><strong>Compiler-basierte Bestimmung der Gültigkeit</strong></p></li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="grundlagen">
+<span id="ch-grundlagen"></span><h2><span class="section-number">3.2. </span>Grundlagen<a class="headerlink" href="#grundlagen" title="Permalink to this heading"></a></h2>
+<ul>
+<li><p><strong>Verschiedene Speicherabstraktionen:</strong></p>
+<blockquote>
+<div><p>Der Hauptspeicher kann durch verschiedene Abstraktionen verwaltet werden, wobei Stack und Heap grundlegende Konzepte darstellen.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Balance zwischen Geschwindigkeit und Platzbedarf:</strong></p>
+<blockquote>
+<div><p>Die Wahl zwischen Stack und Heap beeinflusst die Geschwindigkeit und den Platzbedarf unserer Programme.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<section id="heap">
+<h3><span class="section-number">3.2.1. </span>Heap<a class="headerlink" href="#heap" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>Kontinuierlicher Hauptspeicher</p></li>
+<li><p>Erlaubt Daten an Speicheradressen abzulegen, zu modifizieren und später wieder zu lesen</p></li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="stack">
+<h3><span class="section-number">3.2.2. </span>Stack<a class="headerlink" href="#stack" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Ursprung des Stack:</strong></p>
+<blockquote>
+<div><p>Die Abstraktion des Stapels stammt aus der Notwendigkeit, Unterprogrammaufrufe effizient zu gestalten.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Funktionsweise des Stacks:</strong></p>
+<blockquote>
+<div><p>Lokale Variablen werden auf einem Stapel abgelegt. Die Implementierung erfolgt oft über den Stackpointer, ein spezielles Prozessorregister.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<ul>
+<li><p><strong>Beim Betreten eines Gültigkeitsbereichs:</strong></p>
+<blockquote>
+<div><p>Beim Betreten eines neuen Gültigkeitsbereichs, z.B. einer Funktion, wird die Rückkehradresse auf den Stack gelegt, und Platz für lokale Variablen wird geschaffen.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Beim Verlassen des Gültigkeitsbereichs:</strong></p>
+<blockquote>
+<div><p>Beim Verlassen wird der belegte Stack-Bereich durch Anpassen des Stackpointers freigegeben, und die Rückkehradresse wird für den Rücksprung verwendet.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="speicherverwaltung">
+<h3><span class="section-number">3.2.3. </span>Speicherverwaltung<a class="headerlink" href="#speicherverwaltung" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Funktion:</strong></p>
+<blockquote>
+<div><p>Freigabe von Speicher um Mehrfachbelegung und Fragmentierung zu verhindern.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Implementierung in anderen Sprechen:</strong></p>
+<blockquote>
+<div><p>Garbage Collector, der automatisch nicht mehr erreichbare Objekte freigibt und den Speicher defragmentiert.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="unterschiede-stack-heap">
+<h3><span class="section-number">3.2.4. </span>Unterschiede Stack &amp; Heap<a class="headerlink" href="#unterschiede-stack-heap" title="Permalink to this heading"></a></h3>
+<p><strong>Stack:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Sehr schnelle Belegung und Freigabe</p></li>
+<li><p>Potenziell begrenzter Platz</p></li>
+<li><p>Beschränkt auf Instanzen, deren Größe zur Übersetzungszeit bekannt ist</p></li>
+</ul>
+</div></blockquote>
+<p><strong>Heap:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Höherer Aufwand in Belegung und Freigabe</p></li>
+<li><p>Potenziell größerer Platz</p></li>
+<li><p>Keine Einschränkungen bezüglich der Größe der Instanzen zur Übersetzungszeit</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+</section>
+<section id="rust-und-der-speicher">
+<span id="ch-rust-und-der-speicher"></span><h2><span class="section-number">3.3. </span>Rust und der Speicher<a class="headerlink" href="#rust-und-der-speicher" title="Permalink to this heading"></a></h2>
+<ul>
+<li><p><strong>Ziel von Rust:</strong></p>
+<blockquote>
+<div><p>Rust strebt an, Speicherzugriffe performant zu gestalten, ohne Kompromisse bei der Verhinderung von Speicherlecks einzugehen.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Vergleich mit anderen Sprachen:</strong></p>
+<blockquote>
+<div><p>Ähnlich wie C, C++ und Java setzt Rust auf verschiedene Modelle für den Umgang mit Variablen.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<section id="zwei-grundlegende-modelle-in-rust">
+<h3><span class="section-number">3.3.1. </span>Zwei grundlegende Modelle in Rust<a class="headerlink" href="#zwei-grundlegende-modelle-in-rust" title="Permalink to this heading"></a></h3>
+<ol class="arabic">
+<li><p><strong>Instanzen auf dem Stack:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Skalare Datentypen, Felder, Aufzählungstypen, Tupel und strukturierte Datentypen aus skalaren Datentypen.</p></li>
+<li><p>Größe zur Übersetzungszeit bekannt.</p></li>
+<li><p>Direkte Anlage auf dem Stack für geringen Aufwand bei Erzeugung und Freigabe.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p><strong>Instanzen auf dem Heap:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Komplexere Datentypen oder solche mit unbekannter Größe zur Übersetzungszeit.</p></li>
+<li><p>Anlage auf dem Heap mit höherem Aufwand für Erzeugung und Freigabe.</p></li>
+<li><p>Verwaltungsinformationen auf dem Stack.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="admonition-einschrankungen-und-unterschiede admonition">
+<p class="admonition-title">Einschränkungen und Unterschiede:</p>
+<ul>
+<li><p>Tupel mit mehr als 12 Elementen:</p>
+<blockquote>
+<div><p>In der aktuellen Rust-Version werden Tupel mit mehr als 12 Elementen aufgrund von Typsystemeinschränkungen im Hauptspeicher abgelegt.</p>
+</div></blockquote>
+</li>
+<li><p>Metainformation auf dem Heap:</p>
+<blockquote>
+<div><p>Zusätzliche Metainformationen werden auf dem Heap für die Verwaltung der Variable angelegt.</p>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="copy-semantik-vs-clone-semantik">
+<h3><span class="section-number">3.3.2. </span>Copy-Semantik vs. Clone-Semantik<a class="headerlink" href="#copy-semantik-vs-clone-semantik" title="Permalink to this heading"></a></h3>
+<p><strong>Copy-Semantik:</strong></p>
+<blockquote>
+<div><p>Instanzen auf dem Stack.
+Geringer Aufwand für Erstellung und Freigabe.
+Trait: Copy</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Besitzt keine Funktionalität.</p></li>
+<li><p>Markiert strukturierte Datentypen.</p></li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<p><strong>Clone-Semantik:</strong></p>
+<blockquote>
+<div><p>Instanzen auf dem Heap.
+Höherer Aufwand, insbesondere bei Verschachtelungen (deep copy oder cloning).
+Trait: Clone</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Implementiert die Kopierfunktion.</p></li>
+<li><p>Notwendig für Datentypen, die die Clone-Semantik erfordern.</p></li>
+</ul>
+</div></blockquote>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+</section>
+<section id="modell-fur-skalare-datentypen">
+<span id="ch-modell-fuer-skalare-datentypen"></span><h2><span class="section-number">3.4. </span>Modell für skalare Datentypen<a class="headerlink" href="#modell-fur-skalare-datentypen" title="Permalink to this heading"></a></h2>
+<p><strong>Beispiel: Skalare Datentypen</strong></p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">2</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">variable1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="linenos">3</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">variable2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variable1</span><span class="p">;</span>
+<span class="linenos">4</span><span class="w">    </span><span class="n">variable1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="linenos">5</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}, {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">variable1</span><span class="p">,</span><span class="w"> </span><span class="n">variable2</span><span class="p">);</span>
+<span class="linenos">6</span><span class="p">}</span>
+</pre></div>
+</div>
+<ul>
+<li><p><strong>Copy-Semantik</strong></p></li>
+<li><p><strong>Variable zuweisen:</strong></p>
+<blockquote>
+<div><p>Bei Zuweisung wird eine Kopie des Werts erstellt (Copy-Semantik).
+Unabhängige Gültigkeit der Variablen im Anweisungsblock.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Ausgabe:</strong></p>
+<blockquote>
+<div><p>4, 3</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<section id="wechsel-von-gultigkeitsbereichen">
+<h3><span class="section-number">3.4.1. </span>Wechsel von Gültigkeitsbereichen<a class="headerlink" href="#wechsel-von-gultigkeitsbereichen" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Allgemein:</strong></p>
+<blockquote>
+<div><p>Neue Variablen existieren innerhalb ihres Gültigkeitsbereichs.
+Beim Verlassen des Bereichs werden sie freigegeben.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Kopieren von Variablen:</strong></p>
+<blockquote>
+<div><p>Zuweisung einer Variablen an eine andere bewirkt das Kopieren.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Beispiel: Wechsel von Gültigkeitsbereichen</strong></p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">variable1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="linenos"> 3</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">variable2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="linenos"> 4</span><span class="w">    </span><span class="p">{</span>
+<span class="linenos"> 5</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variable1</span><span class="p">;</span>
+<span class="linenos"> 6</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variable2</span><span class="p">;</span>
+<span class="linenos"> 7</span><span class="w">        </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="linenos"> 8</span><span class="w">        </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}, {}, {}, {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">variable1</span><span class="p">,</span><span class="w"> </span><span class="n">variable2</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="p">}</span>
+<span class="linenos">10</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}, {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">variable1</span><span class="p">,</span><span class="w"> </span><span class="n">variable2</span><span class="p">);</span>
+<span class="linenos">11</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="aufruf-von-funktionen">
+<h3><span class="section-number">3.4.2. </span>Aufruf von Funktionen<a class="headerlink" href="#aufruf-von-funktionen" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Allgemein:</strong></p>
+<blockquote>
+<div><p>Funktionen erhalten Argumente als lokale Variablen auf dem Stack.
+Änderungen bleiben auf den Funktionskontext beschränkt.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Beispiel: Aufruf von Funktionen</strong></p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">variable1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="linenos"> 3</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">variable2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="linenos"> 4</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">return_tupel</span><span class="p">(</span><span class="n">variable1</span><span class="p">,</span><span class="w"> </span><span class="n">variable2</span><span class="p">);</span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}, {}, {}, {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">variable1</span><span class="p">,</span><span class="w"> </span><span class="n">variable2</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+<span class="linenos"> 6</span><span class="p">}</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="k">fn</span> <span class="nf">return_tupel</span><span class="w"> </span><span class="p">(</span><span class="n">v1</span>: <span class="kt">i32</span><span class="p">,</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">v2</span>: <span class="kt">i32</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="p">(</span><span class="kt">i32</span><span class="p">,</span><span class="w"> </span><span class="kt">i32</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v1</span><span class="p">;</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">v2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="linenos">11</span><span class="w">    </span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">v2</span><span class="p">)</span>
+<span class="linenos">12</span><span class="p">}</span>
+</pre></div>
+</div>
+<ul>
+<li><p><strong>Copy-Semantik</strong></p></li>
+<li><p><strong>Ergebnis:</strong></p>
+<blockquote>
+<div><p>Ausgabe: 1, 2, 1, 4</p>
+</div></blockquote>
+</li>
+<li><p><strong>Begründung:</strong></p>
+<blockquote>
+<div><p>Änderungen an v1 und v2 innerhalb der Funktion beeinflussen nur den Funktionskontext.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+</section>
+<section id="das-allgemeine-modell">
+<span id="ch-das-allgemeine-modell"></span><h2><span class="section-number">3.5. </span>Das allgemeine Modell<a class="headerlink" href="#das-allgemeine-modell" title="Permalink to this heading"></a></h2>
+<section id="eigentum-ownership">
+<h3><span class="section-number">3.5.1. </span>Eigentum (Ownership)<a class="headerlink" href="#eigentum-ownership" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Regeln:</strong></p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Jede Heap-Instanz hat genau einen Eigentümer.</p></li>
+<li><p>Instanzfreigabe erfolgt beim Verlassen des Eigentümer-Gültigkeitsbereichs.</p></li>
+</ol>
+</div></blockquote>
+</li>
+<li><p><strong>Compiler-Überwachung:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Diese Regeln werden vom Compiler überwacht und durchgesetzt.</p></li>
+<li><p>Keine Laufzeit-Garbage Collection notwendig.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Beispiel: Ownership</strong></p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">variable1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+<span class="linenos"> 3</span>
+<span class="linenos"> 4</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">variable2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variable1</span><span class="p">;</span><span class="w"> </span><span class="c1">// Eigentumsübergang</span>
+<span class="linenos"> 5</span>
+<span class="hll"><span class="linenos"> 6</span><span class="w">    </span><span class="c1">//println!(&quot;{}&quot;, variable1); // Fehler</span>
+</span><span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="w">    </span><span class="fm">print!</span><span class="p">(</span><span class="s">&quot;{}, &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">variable2</span><span class="p">);</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">variable3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variable2</span><span class="p">;</span><span class="w"> </span><span class="c1">// Eigentumsübergang</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">variable3</span><span class="p">);</span>
+<span class="linenos">13</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Ausgabe:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="mi">42</span><span class="p">,</span><span class="w"> </span><span class="mi">42</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="id1">
+<h3><span class="section-number">3.5.2. </span>Wechsel von Gültigkeitsbereichen<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Eigentumsübergang (Move):</strong></p>
+<blockquote>
+<div><p>Bei Datentypen mit Clone-Semantik kann das Verlassen eines Gültigkeitsbereichs zu unbeabsichtigten Eigentumsübergängen auf dem Heap führen.
+Regel 2 (Freigabe bei ungültigem Eigentümer) kann bewusst oder unbeabsichtigt angewendet werden.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Beispiel: Wechsel von Gültigkeitsbereichen</strong></p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">variable1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">42</span><span class="p">);</span>
+<span class="linenos"> 3</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">variable2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Box</span>::<span class="n">new</span><span class="p">(</span><span class="mi">21</span><span class="p">);</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="w">    </span><span class="p">{</span>
+<span class="linenos"> 6</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">variable3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variable1</span><span class="p">;</span><span class="w"> </span><span class="c1">// Eigentumsübergang</span>
+<span class="linenos"> 7</span><span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">variable4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variable2</span><span class="p">;</span><span class="w"> </span><span class="c1">// Eigentumsübergang</span>
+<span class="linenos"> 8</span><span class="w">        </span><span class="n">variable2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">variable4</span><span class="p">;</span><span class="w"> </span><span class="c1">// Eigentumsübergang</span>
+<span class="linenos"> 9</span><span class="w">    </span><span class="p">}</span>
+<span class="linenos">10</span>
+<span class="hll"><span class="linenos">11</span><span class="w">    </span><span class="c1">//println!(&quot;{}&quot;, variable1); // Fehler</span>
+</span><span class="linenos">12</span><span class="w">    </span><span class="n">println</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">variable2</span><span class="p">);</span>
+<span class="linenos">13</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="id2">
+<h3><span class="section-number">3.5.3. </span>Aufruf von Funktionen<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Eigentumsübergänge bei Funktionen:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Funktionsaufruf: Übertragung von Eigentum an Funktionsparameter.</p></li>
+<li><p>Rückkehr aus Funktion: Übertragung des Eigentums am Rückgabewert an den Aufrufkontext.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p><strong>Bewusste Handhabung des Eigentums:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Vermeidung unbeabsichtigter Zugriffe durch klare Eigentumszuweisungen.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Beispiel: Aufruf von Funktionen</strong></p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">struct</span> <span class="nc">CloneMe</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="n">x</span>: <span class="kt">i32</span><span class="p">,</span>
+<span class="linenos"> 3</span><span class="p">}</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="k">fn</span> <span class="nf">create_struct</span><span class="w"> </span><span class="p">()</span><span class="w"> </span>-&gt; <span class="nc">CloneMe</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">CloneMe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span>: <span class="mi">3</span><span class="w"> </span><span class="p">}</span>
+<span class="linenos"> 7</span><span class="p">}</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="k">fn</span> <span class="nf">return_struct</span><span class="p">(</span><span class="n">input</span>: <span class="nc">cloneMe</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">cloneMe</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">10</span><span class="w">    </span><span class="n">input</span>
+<span class="linenos">11</span><span class="p">}</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">14</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">create_struct</span><span class="p">();</span>
+<span class="linenos">15</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">.</span><span class="n">x</span><span class="p">);</span>
+<span class="linenos">16</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">val2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">return_struct</span><span class="p">(</span><span class="n">val</span><span class="p">);</span>
+<span class="hll"><span class="linenos">17</span><span class="w">    </span><span class="c1">// println!(&quot;{}&quot;, val.x); // Fehler</span>
+</span><span class="linenos">18</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">val2</span><span class="p">.</span><span class="n">x</span><span class="p">);</span>
+<span class="linenos">19</span><span class="w">    </span><span class="n">return_struct</span><span class="p">(</span><span class="n">val2</span><span class="p">);</span>
+<span class="hll"><span class="linenos">20</span><span class="w">    </span><span class="c1">//println!(&quot;{}&quot;, val2.x); // Fehler</span>
+</span><span class="linenos">21</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+</section>
+<section id="referenzen-in-rust">
+<span id="ch-referenzen-in-rust"></span><h2><span class="section-number">3.6. </span>Referenzen in Rust<a class="headerlink" href="#referenzen-in-rust" title="Permalink to this heading"></a></h2>
+<ul>
+<li><p><strong>Sicherer Zugriff:</strong></p>
+<blockquote>
+<div><p>Ermöglicht Zugriff auf den Inhalt einer Variable ohne Eigentumsübertragung.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Syntax:</strong></p>
+<blockquote>
+<div><p>Verwendung von &amp; für die Erstellung von Referenzen und * für die Dereferenzierung.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<section id="lesereferenzen-auf-nicht-veranderbaren-variablen">
+<h3><span class="section-number">3.6.1. </span>Lesereferenzen auf nicht veränderbaren Variablen<a class="headerlink" href="#lesereferenzen-auf-nicht-veranderbaren-variablen" title="Permalink to this heading"></a></h3>
+<p><strong>Keine Veränderungen erlaubt:</strong></p>
+<blockquote>
+<div><p>Für unveränderliche Variablen sind beliebig viele Lesereferenzen möglich.</p>
+</div></blockquote>
+<p><strong>Copy-Semantik:</strong></p>
+<blockquote>
+<div><p>Lesereferenzen folgen der Copy-Semantik, was die Nutzung in Funktionen vereinfacht.</p>
+</div></blockquote>
+<p><strong>Effizienz:</strong></p>
+<blockquote>
+<div><p>Der Compiler kann Optimierungen vornehmen, z. B. Caching von Werten in Prozessorregistern.</p>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Beispiel: Lesereferenzen auf nicht veränderbaren Variablen</strong></p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">struct</span> <span class="nc">CloneMe</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="n">x</span>: <span class="kt">i32</span><span class="p">,</span>
+<span class="linenos"> 3</span><span class="p">}</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="k">fn</span> <span class="nf">ausgabe_clone_me</span><span class="p">(</span><span class="n">reference</span>: <span class="kp">&amp;</span><span class="nc">CloneMe</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">reference</span><span class="p">.</span><span class="n">x</span><span class="p">);</span>
+<span class="linenos"> 7</span><span class="p">}</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">10</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CloneMe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span>: <span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">};</span>
+<span class="linenos">11</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">val</span><span class="p">;</span>
+<span class="linenos">12</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref1</span><span class="p">;</span>
+<span class="linenos">13</span><span class="w">    </span><span class="n">ausgabe_clone_me</span><span class="p">(</span><span class="n">ref1</span><span class="p">);</span>
+<span class="linenos">14</span><span class="w">    </span><span class="n">ausgabe_clone_me</span><span class="p">(</span><span class="o">&amp;</span><span class="n">val</span><span class="p">);</span>
+<span class="linenos">15</span><span class="w">    </span><span class="n">ausgabe_clone_me</span><span class="p">(</span><span class="n">ref2</span><span class="p">);</span>
+<span class="linenos">16</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">.</span><span class="n">x</span><span class="p">);</span>
+<span class="linenos">17</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="lesereferenzen-auf-veranderbaren-variablen">
+<h3><span class="section-number">3.6.2. </span>Lesereferenzen auf veränderbaren Variablen<a class="headerlink" href="#lesereferenzen-auf-veranderbaren-variablen" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Schreibzugriff auf veränderbare Variable:</strong></p>
+<blockquote>
+<div><p>Rust verbietet schreibenden Zugriff, wenn Lesereferenzen aktiv sind.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Fehlermeldung:</strong></p>
+<blockquote>
+<div><p>Compiler verhindert potenziell ungültige Zugriffe und gewährleistet Konsistenz von Lesereferenzen.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Beispiel: Lesereferenzen auf veränderbaren Variablen</strong></p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">struct</span> <span class="nc">CloneMe</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="n">x</span>: <span class="kt">i32</span><span class="p">,</span>
+<span class="linenos"> 3</span><span class="p">}</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="k">fn</span> <span class="nf">ausgabe_clone_me</span><span class="p">(</span><span class="n">reference</span>: <span class="kp">&amp;</span><span class="nc">CloneMe</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">&quot;{}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">reference</span><span class="p">.</span><span class="n">x</span><span class="p">);</span>
+<span class="linenos"> 7</span><span class="p">}</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">10</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CloneMe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span>: <span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">};</span>
+<span class="linenos">11</span><span class="w">    </span><span class="n">val</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="linenos">12</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">val</span><span class="p">;</span>
+<span class="hll"><span class="linenos">13</span><span class="w">    </span><span class="c1">// val.x = 3;               // Fehler in der nächsten Zeile</span>
+</span><span class="linenos">14</span><span class="w">    </span><span class="n">ausgabe_clone_me</span><span class="p">(</span><span class="n">ref1</span><span class="p">);</span>
+<span class="hll"><span class="linenos">15</span><span class="w">    </span><span class="c1">// val.x = 3;               // Fehler in der nächsten Zeile</span>
+</span><span class="linenos">16</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref1</span><span class="p">;</span>
+<span class="linenos">17</span><span class="w">    </span><span class="n">ausgabe_clone_me</span><span class="p">(</span><span class="o">&amp;</span><span class="n">val</span><span class="p">);</span>
+<span class="hll"><span class="linenos">18</span><span class="w">    </span><span class="c1">// val.x = 3;               // Fehler in der nächsten Zeile</span>
+</span><span class="linenos">19</span><span class="w">    </span><span class="n">ausgabe_clone_me</span><span class="p">(</span><span class="n">ref2</span><span class="p">);</span>
+<span class="linenos">20</span><span class="w">    </span><span class="n">val</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="linenos">21</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="effektive-nutzung-von-lesereferenzen">
+<h3><span class="section-number">3.6.3. </span>Effektive Nutzung von Lesereferenzen<a class="headerlink" href="#effektive-nutzung-von-lesereferenzen" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Definiere vor Modifikation:</strong></p>
+<blockquote>
+<div><p>Lesereferenzen vor jeglicher Modifikation einer Variable definieren.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Achte auf Gültigkeitsbereiche:</strong></p>
+<blockquote>
+<div><p>Zugriff auf Lesereferenzen nur innerhalb ihres Gültigkeitsbereichs.</p>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="veranderbaren-referenzen">
+<h3><span class="section-number">3.6.4. </span>Veränderbaren Referenzen<a class="headerlink" href="#veranderbaren-referenzen" title="Permalink to this heading"></a></h3>
+<ul>
+<li><p><strong>Definition:</strong></p>
+<blockquote>
+<div><p>Veränderbare Referenzen mit &amp;mut ermöglichen schreibenden Zugriff auf Variablen.</p>
+</div></blockquote>
+</li>
+<li><p><strong>Einschränkungen:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Nur eine aktive veränderbare Referenz gleichzeitig.</p></li>
+<li><p>Kein paralleler Lesezugriff während aktiver veränderbarer Referenz.</p></li>
+<li><p>Kein Zugriff über die Variable selbst während aktiver veränderbarer Referenz.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="effektive-nutzung-von-move-semantik">
+<h3><span class="section-number">3.6.5. </span>Effektive Nutzung von Move-Semantik<a class="headerlink" href="#effektive-nutzung-von-move-semantik" title="Permalink to this heading"></a></h3>
+<p><strong>Regel für schreibenden Zugriff:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Maximal eine aktive Schreibreferenz: Kein paralleler Lesezugriff.</p></li>
+<li><p>Kein Zugriff über Variable während aktiver Schreibreferenz.</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Beispiel: Effektive Nutzung von Reborrowing</strong></p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">struct</span> <span class="nc">CloneMe</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="n">x</span>: <span class="kt">i32</span><span class="p">,</span>
+<span class="linenos"> 3</span><span class="p">}</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CloneMe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span>: <span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="p">};</span>
+<span class="linenos"> 7</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">val</span><span class="p">;</span>
+<span class="hll"><span class="linenos"> 8</span><span class="w">    </span><span class="c1">// val.x = 3;               // Fehler</span>
+</span><span class="linenos"> 9</span><span class="w">    </span><span class="n">ref1</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="linenos">10</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref1</span><span class="p">;</span><span class="w">            </span><span class="c1">// Move-Semantik</span>
+<span class="hll"><span class="linenos">11</span><span class="w">    </span><span class="c1">// ref1.x = 5;              // Fehler</span>
+</span><span class="hll"><span class="linenos">12</span><span class="w">    </span><span class="c1">// val.x = 6;               // Fehler</span>
+</span><span class="linenos">13</span><span class="w">    </span><span class="n">ref2</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span>
+<span class="linenos">14</span><span class="w">    </span><span class="n">val</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="linenos">15</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="k">struct</span> <span class="nc">CloneMe</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="n">x</span>: <span class="kt">i32</span><span class="p">,</span>
+<span class="linenos"> 3</span><span class="p">}</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="k">fn</span> <span class="nf">increment_clone_me</span><span class="p">(</span><span class="n">reference</span>: <span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">CloneMe</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 6</span><span class="w">    </span><span class="n">reference</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="linenos"> 7</span><span class="p">}</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="k">fn</span> <span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">10</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CloneMe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span>: <span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="p">};</span>
+<span class="linenos">11</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">val</span><span class="p">;</span>
+<span class="linenos">12</span><span class="w">    </span><span class="n">increment_clone_me</span><span class="p">(</span><span class="n">ref1</span><span class="p">);</span><span class="w">               </span><span class="c1">// Reborrow</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref1</span><span class="p">;</span><span class="w">                        </span><span class="c1">// Moved Referenzen</span>
+<span class="linenos">15</span>
+<span class="linenos">16</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref3</span>: <span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">cloneMe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref2</span><span class="p">;</span><span class="w">          </span><span class="c1">// Reborrow 1</span>
+<span class="linenos">17</span><span class="w">    </span><span class="n">ref3</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">                             </span><span class="c1">// Reborrow 1</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span><span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ref4</span>: <span class="kp">&amp;</span><span class="nc">mut</span><span class="w"> </span><span class="n">_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ref3</span><span class="p">;</span><span class="w">                </span><span class="c1">// Reborrow 2</span>
+<span class="linenos">20</span><span class="w">    </span><span class="n">ref4</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span><span class="w">                             </span><span class="c1">// Reborrow 2</span>
+<span class="linenos">21</span>
+<span class="linenos">22</span><span class="w">    </span><span class="n">ref3</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w">                             </span><span class="c1">// Reborrow 1</span>
+<span class="linenos">23</span>
+<span class="linenos">24</span><span class="w">    </span><span class="n">ref2</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w">                             </span><span class="c1">// Back to moved Referenzen</span>
+<span class="linenos">25</span>
+<span class="linenos">26</span><span class="w">    </span><span class="n">increment_clone_me</span><span class="p">(</span><span class="n">ref2</span><span class="p">);</span><span class="w">               </span><span class="c1">// Reborrow</span>
+<span class="linenos">27</span><span class="w">    </span><span class="n">increment_clone_me</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">val</span><span class="p">);</span><span class="w">           </span><span class="c1">// Reborrow</span>
+<span class="linenos">28</span><span class="p">}</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+</section>
+<section id="verwendung-von-variablen-und-referenzen">
+<span id="ch-verwendung-von-variablen-und-referenzen"></span><h2><span class="section-number">3.7. </span>Verwendung von Variablen und Referenzen<a class="headerlink" href="#verwendung-von-variablen-und-referenzen" title="Permalink to this heading"></a></h2>
+<p>In Rust bevorzugen wir die Verwendung von Referenzen, soweit möglich, mit Ausnahmen für Definitionen.
+Der Einsatz von Variablen erfolgt nur, wenn ein Eigentumsübergang notwendig ist.</p>
+<p><strong>Unveränderliche Variablen vorziehen</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Die Nutzung von unveränderlichen Variablen steigert die Sicherheit und ermöglicht Optimierungen.</p></li>
+<li><p>Betone die Verwendung von let für unveränderliche Bindungen.</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Effiziente Nutzung von Veränderbaren Variablen</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Kurze Lebensdauer für veränderbare Variablen anstreben.</p></li>
+<li><p>Minimiere veränderbare Variablen, um die Lesbarkeit und Wartbarkeit des Codes zu verbessern.</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Lesereferenzen gegenüber Schreibreferenzen</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Priorisiere Lesereferenzen für verbesserte Parallelität und Nutzung der Copy-Semantik.</p></li>
+<li><p>Schreibreferenzen sollten so kurz wie möglich verwendet werden.</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Funktionsparameter: Referenzen vs. Variablen</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Im Normalfall bevorzugen wir Referenzen als Funktionsparameter.</p></li>
+<li><p>Die Verwendung von Variablen erfolgt nur, wenn ein expliziter Eigentumsübergang erforderlich ist.</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<p><strong>Rückgabewerte aus Funktionen</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Benutze Variablen für Rückgabewerte, wenn neue Werte innerhalb der Funktion erzeugt werden.</p></li>
+<li><p>Verwende Referenzen nur, wenn Rückgabewerte auf Funktionargumente verweisen.</p></li>
+</ul>
+</div></blockquote>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+</section>
+<section id="vor-und-nachteile-des-modells">
+<span id="ch-vor-und-nachteile-des-modells"></span><h2><span class="section-number">3.8. </span>Vor- und Nachteile des Modells<a class="headerlink" href="#vor-und-nachteile-des-modells" title="Permalink to this heading"></a></h2>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 50.0%" />
+<col style="width: 50.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p><strong>Vorteile</strong></p></th>
+<th class="head"><p><strong>Nachteile</strong></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><div class="line-block">
+<div class="line"><strong>Garantien für Speicherverwendung:</strong></div>
+<div class="line">Einzigartige Garantien für die Speicherverwendung,</div>
+<div class="line">die über das hinausgehen, was andere Sprachen bieten.</div>
+</div>
+</td>
+<td><div class="line-block">
+<div class="line"><strong>Komplexität:</strong></div>
+<div class="line">Das Speichermodell ist komplex und erfordert Umdenken</div>
+<div class="line">im Vergleich zu klassischen Sprachen.</div>
+</div>
+</td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line"><strong>Übersetzungszeitprüfungen:</strong></div>
+<div class="line">Prüfungen erfolgen zur Übersetzungszeit, was zu</div>
+<div class="line">sichererem und effizienterem Code führt.</div>
+</div>
+</td>
+<td></td>
+</tr>
+<tr class="row-even"><td><div class="line-block">
+<div class="line"><strong>Klare Programmiersemantik:</strong></div>
+<div class="line">Durch das Konzept der Referenzen und veränderbaren Referenzen</div>
+<div class="line">(Reborrowing) wird eine klare Programmiersemantik ermöglicht.</div>
+</div>
+</td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><div class="line-block">
+<div class="line"><strong>Explizites Ownership-Modell:</strong></div>
+<div class="line">Die explizite Verwendung des Ownership-Modells in APIs ermöglicht</div>
+<div class="line">eine klare Kommunikation von Parametern und Rückgabewerten.</div>
+</div>
+</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="generische_Datentypen.html" class="btn btn-neutral float-left" title="2. Generische Datentypen" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Bohdan Babii.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

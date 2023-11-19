@@ -10,6 +10,10 @@ Einführung
 
 * Generische Datentypen abstrahieren von zugrundeliegenden Datentypen und ermöglichen die Formulierung von verarbeitenden Algorithmen unabhängig vom konkreten Datentyp.
 
+|
+|
+|
+
 **Warum Generische Typen?**
 
 * **Bekannte Konzepte:** 
@@ -20,6 +24,10 @@ Einführung
     
     Ein Typparameter repräsentiert einen beliebigen Datentyp (oder Datentypen), über den erst später im Code entschieden wird.
 
+|
+|
+|
+
 **Unterschiede zu anderen Sprachen:**
 
 * **Type Erasure in anderen Sprachen:** 
@@ -29,6 +37,10 @@ Einführung
 * **Rust's Ansatz:** 
     
     Rust erzeugt für generische Funktionen spezifische Funktionen für jeden verwendeten Datentyp. Dies führt zu einem geringfügig größeren ausführbaren Programm, ermöglicht jedoch eine extrem effiziente Typprüfung und -verarbeitung zur Laufzeit.
+
+|
+|
+|
 
 .. _ch:Typparameter_in_Datenstrukturen:
 
@@ -47,6 +59,10 @@ Einführung
         <T>
         <T, U, ...>
 
+|
+|
+|
+
 **Turbofish-Operator**
 
 * In den meisten Fällen können Typparameter direkt auf den Namen folgen.
@@ -60,6 +76,10 @@ Einführung
 
 * Bei Schwierigkeiten meldet der Compiler einen Fehler.
 
+|
+|
+|
+
 * **Lösung:** 
     
     Platzierung eines Pfadtrenners (::) zwischen Name und Typ.
@@ -72,6 +92,10 @@ Einführung
 
 * Typparameter sind lokal auf den Gültigkeitsbereich des Datentyps oder der Funktion beschränkt.
 * Wiederverwendung des gleichen Namens in aufeinanderfolgenden Definitionen hat keinen semantischen Zusammenhang zwischen den Typparametern.
+
+|
+|
+|
 
 Typparameter in Datenstrukturen
 -------------------------------
@@ -92,6 +116,11 @@ Typparameter in Datenstrukturen
     
     Wir können dies verbessern, indem wir einen Typparameter zur Verallgemeinerung verwenden. Dies erlaubt uns, die gleiche Datenstruktur flexibel für verschiedene Datentypen zu nutzen.
 
+|
+|
+|
+
+**Beispiel: Typparameter in Datenstruktur**
 
 .. code-block:: rust
     :linenos:
@@ -126,6 +155,9 @@ Typparameter in Datenstrukturen
     
     Bei der Definition der Variable fp_point mit einem Typparameter f32 wird der Typparameter durch die explizite Angabe des Typs ausgewählt.
 
+|
+|
+|
 
 .. _ch:Typparameter_in_Funktionen:
 
@@ -140,6 +172,10 @@ Typparameter in Funktionen
     
     Typparameter in Funktionen ermöglichen uns, generische Funktionen zu erstellen, die mit verschiedenen Datentypen arbeiten können.
 
+|
+|
+|
+
 **Rust's Funktionsweise mit Typparametern:**
 
 * **Auswahl der Implementierung:** 
@@ -150,6 +186,12 @@ Typparameter in Funktionen
 * **Rückgabetyppolymorphismus:**
 
     Der erwartete Rückgabetyp im Quelltext beeinflusst die Auswahl der spezifischen Funktionsausprägung.
+
+|
+|
+|
+
+**Beispiel: Typparameter in Funktionen**
 
 .. code-block:: rust
 
@@ -182,6 +224,10 @@ Typparameter in Funktionen
 
 .. _ch:Typparameter_in_Aufzaehlungstypen:
 
+|
+|
+|
+
 Typparameter in Aufzählungstypen
 --------------------------------
 
@@ -192,6 +238,12 @@ Typparameter in Aufzählungstypen
 * **Zentrale Verwendung in Rust:** 
     
     Rust nutzt diese Kombination an vielen zentralen Stellen, wie z.B. beim Aufzählungstyp Option (für das Ausschließen von Null-Pointern als Rückgabewerte) oder beim Aufzählungstyp Result (zum flexiblen Rückgeben von Ergebnissen oder Fehlern aus Funktionen).
+
+|
+|
+|
+
+**Beispiel: Typparameter in Aufzählungstypen**
 
 .. code-block:: rust
     :linenos:

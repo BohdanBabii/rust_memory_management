@@ -8,23 +8,199 @@ Einführung in das Speichermodell
 Einführung
 ----------
 
+* **Einfluss auf Verwendung der Sprache:** 
+    
+    Das Speichermodell von Rust beeinflusst die Sprachnutzung maßgeblich – Sicherheit im Speichermanagement und Geschwindigkeit werden harmonisch kombiniert.
 
-.. _ch:Voraussetzungen:
+* **Vorbestimmte Nutzungszeit:**
 
-Voraussetzungen
----------------
+    Die Nutzung des Speichers kann im Normalfall bereits zur Übersetzungszeit vorbestimmt werden, was zu einer effizienten Ausführung führt.
 
+|
+|
+|
+
+* **Gültigkeitsbereich für Variablen** 
+
+* **Freigabe von lokalen Variablen** 
+
+* **Begriff des Eigentums (Ownership)** 
+
+* **Compiler-basierte Bestimmung der Gültigkeit**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
+|
+|
+|
+
+.. _ch:Grundlagen:
+
+Grundlagen
+----------
+
+* **Verschiedene Speicherabstraktionen:** 
+
+    Der Hauptspeicher kann durch verschiedene Abstraktionen verwaltet werden, wobei Stack und Heap grundlegende Konzepte darstellen.
+
+* **Balance zwischen Geschwindigkeit und Platzbedarf:** 
+
+    Die Wahl zwischen Stack und Heap beeinflusst die Geschwindigkeit und den Platzbedarf unserer Programme.
+
+|
+|
+|
+
+Heap
+^^^^
+
+* Kontinuierlicher Hauptspeicher 
+* Erlaubt Daten an Speicheradressen abzulegen, zu modifizieren und später wieder zu lesen
+
+|
+|
+|
+
+Stack
+^^^^^
+
+* **Ursprung des Stack:** 
+
+    Die Abstraktion des Stapels stammt aus der Notwendigkeit, Unterprogrammaufrufe effizient zu gestalten.
+
+* **Funktionsweise des Stacks:** 
+
+    Lokale Variablen werden auf einem Stapel abgelegt. Die Implementierung erfolgt oft über den Stackpointer, ein spezielles Prozessorregister.
+
+|
+|
+|
+
+* **Beim Betreten eines Gültigkeitsbereichs:** 
+
+    Beim Betreten eines neuen Gültigkeitsbereichs, z.B. einer Funktion, wird die Rückkehradresse auf den Stack gelegt, und Platz für lokale Variablen wird geschaffen.
+
+* **Beim Verlassen des Gültigkeitsbereichs:** 
+
+    Beim Verlassen wird der belegte Stack-Bereich durch Anpassen des Stackpointers freigegeben, und die Rückkehradresse wird für den Rücksprung verwendet.
+
+|
+|
+|
+
+Speicherverwaltung 
+^^^^^^^^^^^^^^^^^^
+
+* **Funktion:** 
+    
+    Freigabe von Speicher um Mehrfachbelegung und Fragmentierung zu verhindern.
+
+* **Implementierung in anderen Sprechen:**
+
+    Garbage Collector, der automatisch nicht mehr erreichbare Objekte freigibt und den Speicher defragmentiert.
+
+|
+|
+|
+
+Unterschiede Stack & Heap
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Stack:**
+
+        * Sehr schnelle Belegung und Freigabe
+        * Potenziell begrenzter Platz
+        * Beschränkt auf Instanzen, deren Größe zur Übersetzungszeit bekannt ist
+
+**Heap:**
+
+        * Höherer Aufwand in Belegung und Freigabe
+        * Potenziell größerer Platz
+        * Keine Einschränkungen bezüglich der Größe der Instanzen zur Übersetzungszeit
+
+|
+|
+|
 
 .. _ch:rust_und_der_speicher:
 
 Rust und der Speicher
 ---------------------
 
+* **Ziel von Rust:** 
+    
+    Rust strebt an, Speicherzugriffe performant zu gestalten, ohne Kompromisse bei der Verhinderung von Speicherlecks einzugehen.
+
+* **Vergleich mit anderen Sprachen:** 
+
+    Ähnlich wie C, C++ und Java setzt Rust auf verschiedene Modelle für den Umgang mit Variablen.
+
+|
+|
+|
+
+Zwei grundlegende Modelle in Rust
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+#. **Instanzen auf dem Stack:**
+
+    * Skalare Datentypen, Felder, Aufzählungstypen, Tupel und strukturierte Datentypen aus skalaren Datentypen.
+    * Größe zur Übersetzungszeit bekannt.
+    * Direkte Anlage auf dem Stack für geringen Aufwand bei Erzeugung und Freigabe.
+
+#. **Instanzen auf dem Heap:**
+    
+    * Komplexere Datentypen oder solche mit unbekannter Größe zur Übersetzungszeit.
+    * Anlage auf dem Heap mit höherem Aufwand für Erzeugung und Freigabe.
+    * Verwaltungsinformationen auf dem Stack.
+
+|
+|
+|
+
+.. admonition:: Einschränkungen und Unterschiede:
+
+    * Tupel mit mehr als 12 Elementen: 
+        
+        In der aktuellen Rust-Version werden Tupel mit mehr als 12 Elementen aufgrund von Typsystemeinschränkungen im Hauptspeicher abgelegt.
+
+    * Metainformation auf dem Heap:
+        
+        Zusätzliche Metainformationen werden auf dem Heap für die Verwaltung der Variable angelegt.
+
+|
+|
+|
+
+Copy-Semantik vs. Clone-Semantik
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Copy-Semantik:**
+
+    Instanzen auf dem Stack.
+    Geringer Aufwand für Erstellung und Freigabe.
+    Trait: Copy
+
+        * Besitzt keine Funktionalität.
+        * Markiert strukturierte Datentypen.
+
+**Clone-Semantik:**
+
+    Instanzen auf dem Heap.
+    Höherer Aufwand, insbesondere bei Verschachtelungen (deep copy oder cloning).
+    Trait: Clone
+
+        * Implementiert die Kopierfunktion.
+        * Notwendig für Datentypen, die die Clone-Semantik erfordern.
+
+|
+|
+|
 
 .. _ch:modell_fuer_skalare_datentypen:
 
-Model für skalare Datentypen
-----------------------------
+Modell für skalare Datentypen
+-----------------------------
+
+**Beispiel: Skalare Datentypen**
 
 .. code-block:: rust
     :linenos:
@@ -36,8 +212,38 @@ Model für skalare Datentypen
         println!("{}, {}", variable1, variable2);
     }
 
+* **Copy-Semantik**
+
+* **Variable zuweisen:**
+    
+    Bei Zuweisung wird eine Kopie des Werts erstellt (Copy-Semantik).
+    Unabhängige Gültigkeit der Variablen im Anweisungsblock.
+
+* **Ausgabe:**
+
+    4, 3
+
+|
+|
+|
+
 Wechsel von Gültigkeitsbereichen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* **Allgemein:**
+    
+    Neue Variablen existieren innerhalb ihres Gültigkeitsbereichs.
+    Beim Verlassen des Bereichs werden sie freigegeben.
+
+* **Kopieren von Variablen:**
+    
+    Zuweisung einer Variablen an eine andere bewirkt das Kopieren.
+
+|
+|
+|
+
+**Beispiel: Wechsel von Gültigkeitsbereichen**
 
 .. code-block:: rust
     :linenos:
@@ -54,8 +260,23 @@ Wechsel von Gültigkeitsbereichen
         println!("{}, {}", variable1, variable2);
     }
 
+|
+|
+|
+
 Aufruf von Funktionen
 ^^^^^^^^^^^^^^^^^^^^^
+
+* **Allgemein:**
+
+    Funktionen erhalten Argumente als lokale Variablen auf dem Stack.
+    Änderungen bleiben auf den Funktionskontext beschränkt.
+
+|
+|
+|
+
+**Beispiel: Aufruf von Funktionen**
 
 .. code-block:: rust
     :linenos:
@@ -73,10 +294,42 @@ Aufruf von Funktionen
         (x, v2)
     }
 
+* **Copy-Semantik**
+* **Ergebnis:**
+
+    Ausgabe: 1, 2, 1, 4
+
+* **Begründung:** 
+    
+    Änderungen an v1 und v2 innerhalb der Funktion beeinflussen nur den Funktionskontext.
+
+|
+|
+|
+
 .. _ch:das_allgemeine_modell:
 
 Das allgemeine Modell
 ---------------------
+
+Eigentum (Ownership)
+^^^^^^^^^^^^^^^^^^^^
+
+* **Regeln:**
+        
+    #. Jede Heap-Instanz hat genau einen Eigentümer.
+    #. Instanzfreigabe erfolgt beim Verlassen des Eigentümer-Gültigkeitsbereichs.
+
+* **Compiler-Überwachung:**
+    
+    * Diese Regeln werden vom Compiler überwacht und durchgesetzt.
+    * Keine Laufzeit-Garbage Collection notwendig.
+
+|
+|
+|
+
+**Beispiel: Ownership**
 
 .. code-block:: rust
     :linenos:
@@ -96,8 +349,29 @@ Das allgemeine Modell
         println!("{}", variable3);
     }
 
+Ausgabe:
+
+.. code-block:: rust
+    
+    42, 42
+
+|
+|
+|
+
 Wechsel von Gültigkeitsbereichen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* **Eigentumsübergang (Move):**
+    
+    Bei Datentypen mit Clone-Semantik kann das Verlassen eines Gültigkeitsbereichs zu unbeabsichtigten Eigentumsübergängen auf dem Heap führen.
+    Regel 2 (Freigabe bei ungültigem Eigentümer) kann bewusst oder unbeabsichtigt angewendet werden.
+
+|
+|
+|
+
+**Beispiel: Wechsel von Gültigkeitsbereichen**
 
 .. code-block:: rust
     :linenos:
@@ -117,13 +391,31 @@ Wechsel von Gültigkeitsbereichen
         println("{}", variable2);
     }
 
+|
+|
+|
 
 Aufruf von Funktionen
 ^^^^^^^^^^^^^^^^^^^^^
 
+* **Eigentumsübergänge bei Funktionen:**
+    
+    * Funktionsaufruf: Übertragung von Eigentum an Funktionsparameter.
+    * Rückkehr aus Funktion: Übertragung des Eigentums am Rückgabewert an den Aufrufkontext.
+
+* **Bewusste Handhabung des Eigentums:**
+
+    * Vermeidung unbeabsichtigter Zugriffe durch klare Eigentumszuweisungen.
+
+|
+|
+|
+
+**Beispiel: Aufruf von Funktionen**
+
 .. code-block:: rust
     :linenos:
-    :emphasize-lines: 13,16
+    :emphasize-lines: 17,20
 
     struct CloneMe {
         x: i32,
@@ -131,6 +423,10 @@ Aufruf von Funktionen
 
     fn create_struct () -> CloneMe {
         CloneMe { x: 3 }
+    }
+
+    fn return_struct(input: cloneMe) -> cloneMe {
+        input
     }
 
     fn main() {
@@ -143,13 +439,47 @@ Aufruf von Funktionen
         //println!("{}", val2.x); // Fehler
     }
 
+|
+|
+|
+
 .. _ch:referenzen_in_rust:
 
 Referenzen in Rust
 ------------------
 
+* **Sicherer Zugriff:** 
+    
+    Ermöglicht Zugriff auf den Inhalt einer Variable ohne Eigentumsübertragung.
+
+* **Syntax:** 
+
+    Verwendung von & für die Erstellung von Referenzen und * für die Dereferenzierung.
+
+|
+|
+|
+
 Lesereferenzen auf nicht veränderbaren Variablen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Keine Veränderungen erlaubt:** 
+    
+    Für unveränderliche Variablen sind beliebig viele Lesereferenzen möglich.
+
+**Copy-Semantik:** 
+    
+    Lesereferenzen folgen der Copy-Semantik, was die Nutzung in Funktionen vereinfacht.
+
+**Effizienz:** 
+    
+    Der Compiler kann Optimierungen vornehmen, z. B. Caching von Werten in Prozessorregistern.
+
+|
+|
+|
+
+**Beispiel: Lesereferenzen auf nicht veränderbaren Variablen**
 
 .. code-block:: rust
     :linenos:
@@ -167,13 +497,31 @@ Lesereferenzen auf nicht veränderbaren Variablen
         let ref1 = &val;
         let ref2 = ref1;
         ausgabe_clone_me(ref1);
-        ausgabe_clone_me(&val3);
+        ausgabe_clone_me(&val);
         ausgabe_clone_me(ref2);
         println!("{}", val.x);
     }
 
+|
+|
+|
+
 Lesereferenzen auf veränderbaren Variablen
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* **Schreibzugriff auf veränderbare Variable:** 
+    
+    Rust verbietet schreibenden Zugriff, wenn Lesereferenzen aktiv sind.
+
+* **Fehlermeldung:** 
+    
+    Compiler verhindert potenziell ungültige Zugriffe und gewährleistet Konsistenz von Lesereferenzen.
+
+|
+|
+|
+
+**Beispiel: Lesereferenzen auf veränderbaren Variablen**
 
 .. code-block:: rust
     :linenos:
@@ -201,8 +549,55 @@ Lesereferenzen auf veränderbaren Variablen
         val.x = 3;
     }
 
+|
+|
+|
+
+Effektive Nutzung von Lesereferenzen
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+* **Definiere vor Modifikation:** 
+
+    Lesereferenzen vor jeglicher Modifikation einer Variable definieren.
+
+* **Achte auf Gültigkeitsbereiche:** 
+    
+    Zugriff auf Lesereferenzen nur innerhalb ihres Gültigkeitsbereichs.
+
+|
+|
+|
+
 Veränderbaren Referenzen
 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+* **Definition:** 
+
+    Veränderbare Referenzen mit &mut ermöglichen schreibenden Zugriff auf Variablen.
+
+* **Einschränkungen:**
+
+    * Nur eine aktive veränderbare Referenz gleichzeitig.
+    * Kein paralleler Lesezugriff während aktiver veränderbarer Referenz.
+    * Kein Zugriff über die Variable selbst während aktiver veränderbarer Referenz.
+
+|
+|
+|
+
+Effektive Nutzung von Move-Semantik
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Regel für schreibenden Zugriff:**
+
+    * Maximal eine aktive Schreibreferenz: Kein paralleler Lesezugriff.
+    * Kein Zugriff über Variable während aktiver Schreibreferenz.
+
+|
+|
+|
+
+**Beispiel: Effektive Nutzung von Reborrowing**
 
 .. code-block:: rust
     :linenos:
@@ -224,6 +619,9 @@ Veränderbaren Referenzen
         val.x += 1;
     }
 
+|
+|
+|
 
 .. code-block:: rust
     :linenos:
@@ -257,13 +655,99 @@ Veränderbaren Referenzen
         increment_clone_me(&mut val);           // Reborrow
     }
 
+|
+|
+|
+
 .. _ch:verwendung_von_variablen_und_referenzen:
 
 Verwendung von Variablen und Referenzen
 ---------------------------------------
+
+In Rust bevorzugen wir die Verwendung von Referenzen, soweit möglich, mit Ausnahmen für Definitionen.
+Der Einsatz von Variablen erfolgt nur, wenn ein Eigentumsübergang notwendig ist.
+
+**Unveränderliche Variablen vorziehen**
+
+    * Die Nutzung von unveränderlichen Variablen steigert die Sicherheit und ermöglicht Optimierungen.
+    * Betone die Verwendung von let für unveränderliche Bindungen.
+
+|
+|
+|
+
+**Effiziente Nutzung von Veränderbaren Variablen**
+
+    * Kurze Lebensdauer für veränderbare Variablen anstreben.
+    * Minimiere veränderbare Variablen, um die Lesbarkeit und Wartbarkeit des Codes zu verbessern.
+
+|
+|
+|
+
+**Lesereferenzen gegenüber Schreibreferenzen**
+
+    * Priorisiere Lesereferenzen für verbesserte Parallelität und Nutzung der Copy-Semantik.
+    * Schreibreferenzen sollten so kurz wie möglich verwendet werden.
+
+|
+|
+|
+
+**Funktionsparameter: Referenzen vs. Variablen**
+
+    * Im Normalfall bevorzugen wir Referenzen als Funktionsparameter.
+    * Die Verwendung von Variablen erfolgt nur, wenn ein expliziter Eigentumsübergang erforderlich ist.
+
+|
+|
+|
+
+**Rückgabewerte aus Funktionen**
+
+    * Benutze Variablen für Rückgabewerte, wenn neue Werte innerhalb der Funktion erzeugt werden.
+    * Verwende Referenzen nur, wenn Rückgabewerte auf Funktionargumente verweisen.
+
+|
+|
+|
 
 .. _ch:vor_und_nachteile_des_modells:
 
 Vor- und Nachteile des Modells
 ------------------------------
 
+.. list-table:: 
+   :widths: 50 50
+   :header-rows: 1
+
+   * - **Vorteile**
+     - **Nachteile**
+   * - 
+        .. line-block::
+            **Garantien für Speicherverwendung:**
+            Einzigartige Garantien für die Speicherverwendung,
+            die über das hinausgehen, was andere Sprachen bieten.
+     - 
+        .. line-block::
+            **Komplexität:**
+            Das Speichermodell ist komplex und erfordert Umdenken 
+            im Vergleich zu klassischen Sprachen.
+   * - 
+        .. line-block::
+            **Übersetzungszeitprüfungen:**
+            Prüfungen erfolgen zur Übersetzungszeit, was zu 
+            sichererem und effizienterem Code führt.
+     -
+   * - 
+        .. line-block::
+            **Klare Programmiersemantik:**  
+            Durch das Konzept der Referenzen und veränderbaren Referenzen
+            (Reborrowing) wird eine klare Programmiersemantik ermöglicht.
+     -
+   * - 
+        .. line-block::
+            **Explizites Ownership-Modell:**
+            Die explizite Verwendung des Ownership-Modells in APIs ermöglicht
+            eine klare Kommunikation von Parametern und Rückgabewerten.
+     -
