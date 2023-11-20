@@ -93,7 +93,7 @@ Speicherverwaltung
     
     Freigabe von Speicher um Mehrfachbelegung und Fragmentierung zu verhindern.
 
-* **Implementierung in anderen Sprechen:**
+* **Implementierung in anderen Sprachen:**
 
     Garbage Collector, der automatisch nicht mehr erreichbare Objekte freigibt und den Speicher defragmentiert.
 
@@ -285,7 +285,7 @@ Aufruf von Funktionen
         let mut variable1 = 1;
         let variable2 = 2;
         let (a, b) = return_tupel(variable1, variable2);
-        println!("{}, {}, {}, {}", variable1, variable2, x, y);
+        println!("{}, {}, {}, {}", variable1, variable2, a, b);
     }
 
     fn return_tupel (v1: i32, mut v2: i32) -> (i32, i32) {
@@ -622,39 +622,15 @@ Effektive Nutzung von Move-Semantik
 |
 |
 |
+**Reborrowing:** 
+    
+    * Das erneute Ausleihen von Referenzen auf Daten, die bereits ausgeliehen wurden.
 
-.. code-block:: rust
-    :linenos:
+**Warum Reborrowing?**
 
-    struct CloneMe {
-        x: i32,
-    }
-
-    fn increment_clone_me(reference: &mut CloneMe) {
-        reference.x += 1;
-    }
-
-    fn main() {
-        let val = CloneMe { x: 1, };
-        let ref1 = &mut val;
-        increment_clone_me(ref1);               // Reborrow
-
-        let ref2 = ref1;                        // Moved Referenzen
-
-        let ref3: &mut cloneMe = ref2;          // Reborrow 1
-        ref3.x = 2;                             // Reborrow 1
-
-        let ref4: &mut _ = ref3;                // Reborrow 2
-        ref4.x = 3;                             // Reborrow 2
-
-        ref3.x = 4;                             // Reborrow 1
-
-        ref2.x = 5;                             // Back to moved Referenzen
-
-        increment_clone_me(ref2);               // Reborrow
-        increment_clone_me(&mut val);           // Reborrow
-    }
-
+    **Sicherheit:** 
+        
+        * Rust ermöglicht parallelen Zugriff auf Daten, aber mit strengen Regeln, um uns vor unbeabsichtigten Fehlern zu schützen
 |
 |
 |
